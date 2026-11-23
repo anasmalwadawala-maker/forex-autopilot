@@ -1,0 +1,44 @@
+name: Historical research backtest
+on:
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: Yahoo Finance symbol (example USDINR=X)
+        required: true
+        default: USDINR=X
+      period:
+        description: History period
+        required: true
+        default: 5y
+      interval:
+        description: Daily, weekly or monthly bars
+        required: true
+        default: 1d
+permissions:
+  contents: read
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Download historical sample
+        run: python scripts/download_data.py --symbol "${{ inputs.symbol }}" --period "${{ inputs.period }}" --interval "${{ inputs.interval }}"
+      - name: Run chronological ML backtest
+        run: python scripts/backtest.py --csv "data/${{ inputs.symbol }}.csv" --output reports/backtest.json
+      - name: Upload research report and data
+        uses: actions/upload-artifact@v4
+        with:
+          name: forex-autopilot-research-${{ github.run_number }}
+          path: |
+            reports/backtest.json
+            data/*.csv
+          retention-days: 14
