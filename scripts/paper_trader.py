@@ -70,7 +70,9 @@ def process_latest(csv_path, state=None, capital=STARTING_CAPITAL):
     close_hist = history["close"].astype(float)
     features = feature_frame(close_hist)
     next_return = close_hist.shift(-1) / close_hist - 1.0
-    train = features.assign(target=(next_return > 0).astype(int)).dropna()
+    # Drop the final history row because its next-candle outcome is not known yet.
+    train = features.assign(next_return=next_return).dropna()
+    train["target"] = (train["next_return"] > 0).astype(int)
     current_features = feature_frame(df["close"].astype(float)).iloc[[-1]][FEATURES]
     probability = None
     proposed_position = 0
