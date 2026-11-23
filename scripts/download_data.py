@@ -24,7 +24,7 @@ def main():
     needed = ["date", "open", "high", "low", "close"]
     frame = frame[needed + (["volume"] if "volume" in frame else [])].dropna(subset=needed)
     out = Path(a.output_dir); out.mkdir(parents=True, exist_ok=True)
-    path = out / f"{a.symbol.replace('=', '_').replace('^', '')}.csv"
+    path = out / f"{a.symbol.replace('^', '')}.csv"
     frame.to_csv(path, index=False)
     print(f"Saved {len(frame)} rows to {path}")
     print("Provider note: yfinance is an unofficial Yahoo Finance interface; availability, coverage and terms may change.")
