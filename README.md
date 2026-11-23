@@ -1,42 +1,53 @@
-# Forex Autopilot — v0.3
+# Forex Autopilot — v1.0 research build
 
-A static GitHub Pages research dashboard plus a Python historical-data and machine-learning backtest pipeline.
+A static GitHub Pages dashboard plus a scheduled, daily EUR/USD paper-trading simulation.
 
 ## Safety scope
-- Historical analysis and paper simulations only.
-- No broker integration, credentials, API keys, order routing or real-money execution.
-- Backtest outputs are not forecasts or investment advice.
-- Indian users must independently verify current RBI/FEMA rules and use only permitted, authorised routes before considering any financial activity. This repository does not enable live trading.
+- Paper trading only. The simulator sets `live_trading` to false and rejects a state marked otherwise.
+- No broker integration, credentials, API keys, order routing, deposits, or real-money execution.
+- This is not financial advice or evidence of a profitable strategy.
+- Daily market data from yfinance is an unofficial Yahoo Finance interface and may be delayed, revised, unavailable, or subject to provider terms.
 
-## GitHub Pages
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select branch **main**, folder **/(root)**, then Save.
-4. Wait for the Pages URL to appear in Settings → Pages.
+## Daily paper-trading schedule
+- GitHub Actions schedule: weekdays at 05:30 Asia/Kolkata.
+- It downloads up to five years of EUR/USD daily candles, runs the full unit-test suite, then processes the newest available daily candle.
+- The first run initializes a ₹1,00,000 virtual baseline with no position. Later runs update the simulated position, equity and report when a new candle exists.
+- Duplicate runs for the same candle are idempotent.
+- State is saved to `state/paper_state.json`; each report is uploaded as a GitHub Actions artifact for 30 days.
+- GitHub Actions scheduled jobs may be delayed or skipped during high load. In public repositories, schedules may be disabled after 60 days without repository activity. The schedule only works when this workflow is committed to the default branch.
 
-## Dashboard CSV format
-Upload a CSV locally in the dashboard. Required columns: `date,open,high,low,close`; `volume` optional. Use at least 80 rows for the browser experiment and sort oldest to newest. Data stays in your browser; it is not uploaded.
+## Moderate simulator risk assumptions
+- Maximum notional exposure: 25% of virtual equity; no leverage.
+- Signal: logistic regression probability above 0.55 = long, below 0.45 = short, otherwise flat.
+- Assumed transaction cost: 3 basis points per unit of position change, applied to the 25% exposure.
+- Circuit breaker: pause after a processed session loses 2% or peak-to-trough drawdown reaches 10%.
+- These are research assumptions, not validated risk controls or guarantees. The daily job processes the latest available candle; a delayed/missed run can span multiple market sessions.
 
-## Python research workflow
-1. Open **Actions → Historical research backtest → Run workflow**.
-2. Default symbol is `USDINR=X`; choose daily/weekly/monthly interval.
-3. The workflow installs requirements, runs unit tests, downloads public history through `yfinance`, trains a logistic-regression classifier on the first 70% of observations, and evaluates the final 30% chronologically.
-4. Download the report artifact from the completed workflow run.
+## Data and model
+- Pair: EUR/USD (`EURUSD=X`), daily candles.
+- Model features: 1-, 2-, and 5-bar returns; gaps from 5- and 10-bar simple moving averages.
+- Model is trained only on historical rows whose next-candle outcome is already known; the latest candle is prediction-only.
+- This is a simple logistic-regression research baseline. It does not prove predictive edge.
 
-The Yahoo Finance interface used by yfinance is unofficial. Data availability, coverage, licensing and provider terms may change. Verify data suitability and rights before use. Historical USD/INR data is not a live executable quote.
-
-## Model notes
-Features: one-, two- and five-bar returns, and gaps from five- and ten-bar moving averages. Each feature row at time *t* predicts the direction of the next bar. The Python backtest uses a chronological holdout, standardized logistic regression, long/short/flat paper positions, and a configurable simplified cost assumption. This is a research baseline, not evidence of a profitable strategy. Expect weak or negative results.
-
-## Local run
+## Run locally
 ```bash
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
-python scripts/download_data.py --symbol USDINR=X --period 5y --interval 1d
-python scripts/backtest.py --csv data/USDINR=X.csv
+python scripts/download_data.py --symbol EURUSD=X --period 5y --interval 1d
+python scripts/paper_trader.py --csv data/EURUSD=X.csv
 ```
 
-The browser dashboard uses a small JavaScript logistic-regression implementation and runs only on the CSV selected by the visitor. GitHub Pages is static hosting; it cannot keep a Python process running continuously. GitHub Actions runs only when manually triggered here.
+## GitHub setup
+1. Commit `.github/workflows/daily-paper-trading.yml` to the repository's default branch.
+2. In Settings → Actions → General → Workflow permissions, allow read and write permissions (the workflow also requests `contents: write`).
+3. Open Actions → Daily Forex paper trading to inspect runs and download the daily JSON report.
+4. Keep the repository active; GitHub can disable scheduled workflows after 60 days of inactivity on public repositories.
+
+## Limitations
+- GitHub Pages is static hosting; it cannot host a continuously running Python process.
+- This workflow is a scheduled daily research job, not a 24/7 bot. GitHub may delay or drop scheduled jobs under load.
+- A missing or stale market-data candle results in no new trade for that run.
+- No real trading is possible through this project.
 
 ## Version
-v0.3 — local CSV backtest, Python ML research workflow, unit tests and static dashboard.
+v1.0 research build — scheduled daily paper simulation, persisted virtual state, model signal, moderate exposure cap, circuit breakers and unit tests.
