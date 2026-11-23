@@ -1,0 +1,46 @@
+name: Daily Forex paper trading
+on:
+  schedule:
+    - cron: '30 5 * * 1-5'
+      timezone: 'Asia/Kolkata'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: forex-autopilot-daily-paper
+  cancel-in-progress: false
+jobs:
+  paper-trading:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run all tests
+        run: python -m unittest discover -s tests -v
+      - name: Download latest daily EUR/USD history
+        run: python scripts/download_data.py --symbol 'EURUSD=X' --period '5y' --interval '1d'
+      - name: Process one daily paper-trading check
+        run: python scripts/paper_trader.py --csv 'data/EURUSD=X.csv' --state 'state/paper_state.json' --report 'reports/daily_paper_report.json' --capital 100000
+      - name: Persist paper state
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add state/paper_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update daily paper trading state'
+            git push
+          fi
+      - name: Upload daily report
+        uses: actions/upload-artifact@v4
+        with:
+          name: forex-autopilot-daily-paper-${{ github.run_number }}
+          path: reports/daily_paper_report.json
+          retention-days: 30
