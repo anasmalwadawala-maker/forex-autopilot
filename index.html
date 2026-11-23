@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Forex Autopilot — research, machine-learning experiments and paper backtesting. No live trading.">
+  <title>Forex Autopilot — Research Dashboard</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark">F</span><span>FOREX <b>AUTOPILOT</b><small>RESEARCH TERMINAL · v0.3</small></span></a><span class="status"><i></i> PAPER MODE ONLY</span></header>
+<main class="wrap">
+  <section class="hero"><div><p class="eyebrow">SYSTEM OVERVIEW / 001</p><h1>Research first.<br><em>Risk always.</em></h1><p class="sub">A transparent workspace for historical data, machine-learning experiments and backtesting. It does not connect to brokers or place orders.</p></div><div class="hero-card"><span class="eyebrow">EXECUTION STATUS</span><strong>DISABLED</strong><p>Live trading · Broker API · Real-money orders</p><span class="lock">🔒 Permanently disabled in this build</span></div></section>
+  <section class="notice"><b>Safety boundary</b><span>Demo and historical analysis only. Results are simulations, not forecasts or financial advice. Never upload account credentials or API keys.</span></section>
+  <section class="section-head"><div><p class="eyebrow">01 / YOUR DATA</p><h2>Run a local backtest</h2></div><span class="tag">Runs in this browser</span></section>
+  <section class="panel upload-panel"><div class="upload-copy"><h3>Import historical OHLCV CSV</h3><p>Required columns: <code>date,open,high,low,close</code>. Volume is optional. Use one consistent timeframe and sorted dates.</p><label class="file-button" for="csvFile">Choose CSV file</label><input id="csvFile" type="file" accept=".csv,text/csv"><span id="fileName" class="muted">No file selected</span></div><div class="data-hint"><b>Data format</b><code>date,open,high,low,close,volume<br>2025-01-01,85.1,85.4,84.9,85.2,1200</code><small>Use legally obtained data. The app does not fetch market prices.</small></div></section>
+  <section class="section-head"><div><p class="eyebrow">02 / MODEL</p><h2>Machine-learning backtest</h2></div><span class="tag">Chronological holdout</span></section>
+  <section class="panel"><div class="controls"><label>Starting paper balance (₹)<input id="capital" type="number" min="1000" step="1000" value="100000"></label><label>Estimated cost per position change (%)<input id="cost" type="number" min="0" max="2" step="0.001" value="0.05"></label><button id="runBtn" disabled>Run backtest</button></div><p class="muted small">A logistic-regression classifier uses lagged returns, momentum and moving-average features. First 70% trains the model; final 30% is held out for testing. Costs are a simplified assumption.</p><div id="message" class="message">Import a CSV file to begin.</div></section>
+  <section class="metrics" id="metrics" aria-live="polite"><article class="metric"><span>Net return</span><strong>—</strong><small>Test period</small></article><article class="metric"><span>Max drawdown</span><strong>—</strong><small>Test period</small></article><article class="metric"><span>Directional accuracy</span><strong>—</strong><small>Model predictions</small></article><article class="metric"><span>Test observations</span><strong>—</strong><small>Out-of-sample</small></article></section>
+  <section class="panel results"><div class="section-head inner"><div><p class="eyebrow">03 / RESULTS</p><h2>Equity curve</h2></div><span id="resultLabel" class="tag">Waiting for data</span></div><canvas id="equity" height="180" aria-label="Backtest equity curve"></canvas><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Result</th><th>Meaning</th></tr></thead><tbody id="detailRows"><tr><td colspan="3">No backtest yet.</td></tr></tbody></table></div></section>
+  <section class="section-head"><div><p class="eyebrow">04 / AUTOMATION</p><h2>Python research pipeline</h2></div><span class="tag">GitHub Actions</span></section>
+  <section class="panel pipeline"><div><h3>Scheduled execution is not enabled</h3><p>Use the Actions tab to manually run the data-download and Python backtest workflow. It downloads public Yahoo Finance data through yfinance (unofficial; availability and terms can change), writes a report artifact, and never trades.</p><a class="text-link" href="https://github.com/anasmalwadawala-maker/forex-autopilot/actions">Open GitHub Actions ↗</a></div><div class="pipeline-state"><span class="dot"></span> Manual run only</div></section>
+  <footer><span>FOREX AUTOPILOT · v0.3</span><span>Research software · Not a broker · No live execution</span></footer>
+</main>
+<script src="assets/app.js"></script>
+</body></html>
