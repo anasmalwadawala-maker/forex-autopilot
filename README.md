@@ -33,7 +33,7 @@ Features: one-, two- and five-bar returns, and gaps from five- and ten-bar movin
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 python scripts/download_data.py --symbol USDINR=X --period 5y --interval 1d
-python scripts/backtest.py --csv data/USDINR_X.csv
+python scripts/backtest.py --csv data/USDINR=X.csv
 ```
 
 The browser dashboard uses a small JavaScript logistic-regression implementation and runs only on the CSV selected by the visitor. GitHub Pages is static hosting; it cannot keep a Python process running continuously. GitHub Actions runs only when manually triggered here.
